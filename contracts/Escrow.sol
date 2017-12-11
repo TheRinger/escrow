@@ -120,6 +120,8 @@ contract Escrow {
             desiredCancelDuring[counterparty][escrowName] == false;  // Return desiredCancelDuring to uninitialized state
             escrowInitializing[msg.sender][escrowName] = false;      // Return escrowInitializing to uninitialized state
             escrowInitializing[counterparty][escrowName] = false;    // Return escrowInitializing to uninitialized state
+            endTime[msg.sender][escrowName] = 0;                     // Return endTimestamp to uninitialized state
+            endTime[counterparty][escrowName] = 0;                   // Return endTimestamp to uninitialized state
 
             msg.sender.transfer(ethToReturnParty);           // Return ETH to the respective counterparty
             counterparty.transfer(ethToReturnCounterparty);  // Return ETH to the respective counterparty
@@ -151,6 +153,8 @@ contract Escrow {
             escrowInitializing[counterparty][escrowName] = false;   // Return escrowInitializing to uninitialized state
             escrowOver[msg.sender][escrowName] = false;             // Return escrowOver to uninitialized state
             escrowOver[counterparty][escrowName] = false;           // Return escrowOver to uninitialized state
+            endTime[msg.sender][escrowName] = 0;                    // Return endTimestamp to uninitialized state
+            endTime[counterparty][escrowName] = 0;                  // Return endTimestamp to uninitialized state
 
             msg.sender.transfer(ethToReturnParty);           // Return ETH to the respective counterparty
             counterparty.transfer(ethToReturnCounterparty);  // Return ETH to the respective counterparty
