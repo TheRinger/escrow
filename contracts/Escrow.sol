@@ -48,8 +48,8 @@ contract Escrow {
         uint256 resultVal,
         bool resultCondition
     )
-    public
-    payable
+        public
+        payable
     {
         require(counterparty != address(0));  // The counterparty must be defined
         require(endTimestamp > block.timestamp);   // The end of the escrow must be after the current time
