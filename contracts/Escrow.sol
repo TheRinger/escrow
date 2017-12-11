@@ -114,18 +114,7 @@ contract Escrow {
             }
         }
         uint256 winnings = betVal[msg.sender][escrowName].add(betVal[counterparty][escrowName]);
-        desiredCancelAfter[msg.sender][escrowName] == false;         // Return desiredCancelAfter to uninitialized state
-        desiredCancelAfter[counterparty][escrowName] == false;       // Return desiredCancelAfter to uninitialized state
-        escrowInitializing[msg.sender][escrowName] = false;          // Return escrowInitializing to uninitialized state
-        escrowInitializing[counterparty][escrowName] = false;        // Return escrowInitializing to uninitialized state
-        escrowOver[msg.sender][escrowName] = false;                  // Return escrowOver to uninitialized state
-        escrowOver[counterparty][escrowName] = false;                // Return escrowOver to uninitialized state
-        endTime[msg.sender][escrowName] = 0;                         // Return endTimestamp to uninitialized state
-        endTime[counterparty][escrowName] = 0;                       // Return endTimestamp to uninitialized state
-        predictedResult[msg.sender][escrowName] = 0;                 // Return predictedResult to uninitialized state
-        predictedResult[counterparty][escrowName] = 0;               // Return predictedResult to uninitialized state
-        predictedResultCondition[msg.sender][escrowName] = false;    // Return predictedResultCondition to uninitialized state
-        predictedResultCondition[counterparty][escrowName] = false;  // Return predictedResultCondition to uninitialized state
+        uninitialize(escrowName, counterparty, 'over');  // Uninitialize variables
 
         winner.transfer(winnings);
     }
@@ -139,16 +128,9 @@ contract Escrow {
         require(escrowOngoing[msg.sender][escrowName] == false);      // Escrow of this name with this party has to not be ongoing
         require(escrowOver[msg.sender][escrowName] == false);         // Escrow of this name with this party has to not be over
 
-        uint256 ethToReturn = betVal[msg.sender][escrowName];        // Calculate value to return
-        escrowInitializing[msg.sender][escrowName] = false;          // Return escrowInitializing to uninitialized state
-        betVal[msg.sender][escrowName] = 0;                          // Return betVal to uninitialized state
-        betVal[counterparty][escrowName] = 0;                        // Return betVal to uninitialized state
-        endTime[msg.sender][escrowName] = 0;                         // Return endTimestamp to uninitialized state
-        endTime[counterparty][escrowName] = 0;                       // Return endTimestamp to uninitialized state
-        predictedResult[msg.sender][escrowName] = 0;                 // Return predictedResult to uninitialized state
-        predictedResult[counterparty][escrowName] = 0;               // Return predictedResult to uninitialized state
-        predictedResultCondition[msg.sender][escrowName] = false;    // Return predictedResultCondition to uninitialized state
-        predictedResultCondition[counterparty][escrowName] = false;  // Return predictedResultCondition to uninitialized state
+        uint256 ethToReturn = betVal[msg.sender][escrowName];         // Calculate value to return
+        uninitialize(escrowName, counterparty, 'before');             // Uninitialize variables
+
 
         msg.sender.transfer(ethToReturn);  // Return ETH to the appropriate party
     }
@@ -156,7 +138,7 @@ contract Escrow {
     /// @dev Cancel the escrow while it is ongoing. Requires both parties. Returns funds.
     /// @param escrowName Name of the escrow
     /// @param counterparty The address of the person who is partaking in the escrow
-    function cancelMidEscrow(bytes32 escrowName, address counterparty) public {
+    function cancelDuringEscrow(bytes32 escrowName, address counterparty) public {
         require(block.timestamp < endTime[msg.sender][escrowName]);     // Escrow must be ongoing
         require(escrowInitializing[msg.sender][escrowName] == true);    // Escrow must have been initiated
         require(escrowInitializing[counterparty][escrowName] == true);  // Escrow must have been initiated
@@ -168,18 +150,7 @@ contract Escrow {
         if (desiredCancelDuring[msg.sender][escrowName] == true && desiredCancelDuring[counterparty][escrowName] == true) {
             uint256 ethToReturnParty = betVal[msg.sender][escrowName];
             uint256 ethToReturnCounterparty = betVal[counterparty][escrowName];
-            betVal[msg.sender][escrowName] = 0;    // Return betVal to uninitialized state
-            betVal[counterparty][escrowName] = 0;  // Return betVal to uninitialized state
-            desiredCancelDuring[msg.sender][escrowName] == false;        // Return desiredCancelDuring to uninitialized state
-            desiredCancelDuring[counterparty][escrowName] == false;      // Return desiredCancelDuring to uninitialized state
-            escrowInitializing[msg.sender][escrowName] = false;          // Return escrowInitializing to uninitialized state
-            escrowInitializing[counterparty][escrowName] = false;        // Return escrowInitializing to uninitialized state
-            endTime[msg.sender][escrowName] = 0;                         // Return endTimestamp to uninitialized state
-            endTime[counterparty][escrowName] = 0;                       // Return endTimestamp to uninitialized state
-            predictedResult[msg.sender][escrowName] = 0;                 // Return predictedResult to uninitialized state
-            predictedResult[counterparty][escrowName] = 0;               // Return predictedResult to uninitialized state
-            predictedResultCondition[msg.sender][escrowName] = false;    // Return predictedResultCondition to uninitialized state
-            predictedResultCondition[counterparty][escrowName] = false;  // Return predictedResultCondition to uninitialized state
+            uninitialize(escrowName, counterparty, 'during');  // Uninitialize variables
 
             msg.sender.transfer(ethToReturnParty);           // Return ETH to the respective counterparty
             counterparty.transfer(ethToReturnCounterparty);  // Return ETH to the respective counterparty
@@ -203,27 +174,42 @@ contract Escrow {
         if (desiredCancelAfter[msg.sender][escrowName] == true && desiredCancelAfter[counterparty][escrowName] == true) {
             uint256 ethToReturnParty = betVal[msg.sender][escrowName];
             uint256 ethToReturnCounterparty = betVal[counterparty][escrowName];
-            betVal[msg.sender][escrowName] = 0;    // Return betVal to uninitialized state
-            betVal[counterparty][escrowName] = 0;  // Return betVal to uninitialized state
-            desiredCancelAfter[msg.sender][escrowName] == false;         // Return desiredCancelAfter to uninitialized state
-            desiredCancelAfter[counterparty][escrowName] == false;       // Return desiredCancelAfter to uninitialized state
-            escrowInitializing[msg.sender][escrowName] = false;          // Return escrowInitializing to uninitialized state
-            escrowInitializing[counterparty][escrowName] = false;        // Return escrowInitializing to uninitialized state
-            escrowOver[msg.sender][escrowName] = false;                  // Return escrowOver to uninitialized state
-            escrowOver[counterparty][escrowName] = false;                // Return escrowOver to uninitialized state
-            endTime[msg.sender][escrowName] = 0;                         // Return endTimestamp to uninitialized state
-            endTime[counterparty][escrowName] = 0;                       // Return endTimestamp to uninitialized state
-            predictedResult[msg.sender][escrowName] = 0;                 // Return predictedResult to uninitialized state
-            predictedResult[counterparty][escrowName] = 0;               // Return predictedResult to uninitialized state
-            predictedResultCondition[msg.sender][escrowName] = false;    // Return predictedResultCondition to uninitialized state
-            predictedResultCondition[counterparty][escrowName] = false;  // Return predictedResultCondition to uninitialized state
+            uninitialize(escrowName, counterparty, 'over');  // Uninitialize variables
 
             msg.sender.transfer(ethToReturnParty);           // Return ETH to the respective counterparty
             counterparty.transfer(ethToReturnCounterparty);  // Return ETH to the respective counterparty
         }
     }
 
-    // TODO: Add uninitialize function with state parameter
+    function uninitialize(bytes32 escrowName, address counterparty, string state) internal {
+        escrowInitializing[msg.sender][escrowName] = false;          // Return escrowInitializing to uninitialized state
+        betVal[msg.sender][escrowName] = 0;                          // Return betVal to uninitialized state
+        betVal[counterparty][escrowName] = 0;                        // Return betVal to uninitialized state
+        endTime[msg.sender][escrowName] = 0;                         // Return endTimestamp to uninitialized state
+        endTime[counterparty][escrowName] = 0;                       // Return endTimestamp to uninitialized state
+        predictedResult[msg.sender][escrowName] = 0;                 // Return predictedResult to uninitialized state
+        predictedResult[counterparty][escrowName] = 0;               // Return predictedResult to uninitialized state
+        predictedResultCondition[msg.sender][escrowName] = false;    // Return predictedResultCondition to uninitialized state
+        predictedResultCondition[counterparty][escrowName] = false;  // Return predictedResultCondition to uninitialized state
+
+        if (state == 'during') {
+            escrowInitializing[counterparty][escrowName] = false;    // Return escrowInitializing to uninitialized state
+            escrowOngoing[msg.sender][escrowName] = false;           // Return escrowInitializing to uninitialized state
+            escrowOngoing[counterparty][escrowName] = false;         // Return escrowInitializing to uninitialized state
+            desiredCancelDuring[msg.sender][escrowName] == false;    // Return desiredCancelDuring to uninitialized state
+            desiredCancelDuring[counterparty][escrowName] == false;  // Return desiredCancelDuring to uninitialized state
+        }
+        if (state = 'over') {
+            escrowInitializing[counterparty][escrowName] = false;    // Return escrowInitializing to uninitialized state
+            escrowOngoing[msg.sender][escrowName] = false;           // Return escrowInitializing to uninitialized state
+            escrowOngoing[counterparty][escrowName] = false;         // Return escrowInitializing to uninitialized state
+            escrowOver[msg.sender][escrowName] = false;              // Return escrowOver to uninitialized state
+            escrowOver[counterparty][escrowName] = false;            // Return escrowOver to uninitialized state
+            desiredCancelDuring[msg.sender][escrowName] == false;    // Return desiredCancelDuring to uninitialized state
+            desiredCancelDuring[counterparty][escrowName] == false;  // Return desiredCancelDuring to uninitialized state
+        }
+    }
+
     /// @dev Retrieves the oracle result for the specified escrow
     /// @param oracleURL URL to get the oracle result from
     function getOracleResult(string oracleURL) internal returns(uint256) {
