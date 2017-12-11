@@ -78,7 +78,7 @@ contract Escrow {
     /// @param escrowName Name of the escrow
     /// @param oracleURL URL to get the oracle result from
     function endEscrow(bytes32 escrowName, string oracleURL) public {
-        // TODO
+        require()
     }
 
     /// @dev Cancel the escrow before it has begun. Requires just one party. Returns funds.
@@ -103,7 +103,7 @@ contract Escrow {
     /// @param escrowName Name of the escrow
     /// @param counterparty The address of the person who is partaking in the escrow
     function cancelMidEscrow(bytes32 escrowName, address counterparty) public {
-        // TODO: Require time < endTime
+        require(block.timestamp < endTime[msg.sender][escrowName]);     // Escrow must be ongoing
         require(escrowInitializing[msg.sender][escrowName] == true);    // Escrow must have been initiated
         require(escrowInitializing[counterparty][escrowName] == true);  // Escrow must have been initiated
         require(escrowOngoing[msg.sender][escrowName] == true);         // Escrow must be ongoing
@@ -121,7 +121,6 @@ contract Escrow {
             escrowInitializing[msg.sender][escrowName] = false;      // Return escrowInitializing to uninitialized state
             escrowInitializing[counterparty][escrowName] = false;    // Return escrowInitializing to uninitialized state
 
-
             msg.sender.transfer(ethToReturnParty);           // Return ETH to the respective counterparty
             counterparty.transfer(ethToReturnCounterparty);  // Return ETH to the respective counterparty
         }
@@ -131,7 +130,7 @@ contract Escrow {
     /// @param escrowName Name of the escrow
     /// @param counterparty The address of the person who is partaking in the escrow
     function cancelPostEscrow(bytes32 escrowName, address counterparty) public {
-        // TODO: Require time > endTime
+        require(block.timestamp > endTime[msg.sender][escrowName]);     // Escrow must be over
         require(escrowInitializing[msg.sender][escrowName] == true);    // Escrow must have been initiated
         require(escrowInitializing[counterparty][escrowName] == true);  // Escrow must have been initiated
         require(escrowOngoing[msg.sender][escrowName] == true);         // Escrow must have been ongoing
