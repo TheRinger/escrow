@@ -5,7 +5,6 @@ import "zeppelin-solidity/contracts/math/SafeMath.sol";
 
 // TODO:
 // What happens if endTime occurs prior to the counterparty finalizing the escrow? It should simply cancel.
-// Make sure that all states are reset where appropriate.
 contract Escrow {
     using SafeMath for uint;
 
@@ -152,8 +151,8 @@ contract Escrow {
             uint256 ethToReturnCounterparty = betVal[counterparty][escrowName];
             uninitialize(escrowName, counterparty, 'during');  // Uninitialize variables
 
-            msg.sender.transfer(ethToReturnParty);           // Return ETH to the respective counterparty
-            counterparty.transfer(ethToReturnCounterparty);  // Return ETH to the respective counterparty
+            msg.sender.transfer(ethToReturnParty);             // Return ETH to the respective counterparty
+            counterparty.transfer(ethToReturnCounterparty);    // Return ETH to the respective counterparty
         }
     }
 
