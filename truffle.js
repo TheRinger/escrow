@@ -1,4 +1,14 @@
 module.exports = {
-  // See <http://truffleframework.com/docs/advanced/configuration>
-  // to customize your Truffle configuration!
+    networks: {
+        main: {
+            host: "localhost",
+            port: 8645,
+            network_id: "1" // Main network_id
+        },
+        development: {
+            host: "localhost",
+            port: 8645,
+            network_id: "*" // Match any network id
+        }
+    }
 };
