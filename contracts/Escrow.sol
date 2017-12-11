@@ -1,6 +1,7 @@
 pragma solidity ^0.4.15;
 
 import "zeppelin-solidity/contracts/math/SafeMath.sol";
+import "github.com/oraclize/ethereum-api/oraclizeAPI.sol";
 
 
 // TODO:
@@ -105,7 +106,7 @@ contract Escrow {
         require(escrowOver[counterparty][escrowName] == true);          // Escrow must have been ongoing
 
         // Calculate the winner and loser
-        uint256 oracleResult = getOracleResults();
+        uint256 oracleResult = getOracleResult(oracleURL);
         if (predictedResultCondition[msg.sender][escrowName] == true) {
             if (predictedResult[msg.sender][escrowName] > oracleResult) {
                 winner = msg.sender;
@@ -123,7 +124,8 @@ contract Escrow {
                 loser = counterparty;
             }
         }
-        uint256 winnings = betVal[msg.sender][escrowName].add(betVal[counterparty][escrowName]);
+        uint256 winnings = betVal[msg.sender][escrowName].add(betVal[counterparty][escrowName]).sub(oraclize_getPrice("URL")); // Subtract the Oraclize cost
+                                                                                                                               // TODO: test this
         uninitialize(escrowName, counterparty, "over");  // Uninitialize variables
 
         winner.transfer(winnings);
@@ -226,8 +228,14 @@ contract Escrow {
     }
 
     /// @dev Retrieves the oracle result for the specified escrow
+    /// @notice This is a public function and is meant to be used to test the URL before actually creating an escrow
     /// @param oracleURL URL to get the oracle result from
     function getOracleResult(string oracleURL) internal returns(uint256) {
-        // TODO
+        if (oraclize_getPrice("URL") > this.balance) {
+            newOraclizeQuery("Oraclize query was NOT sent, please add some ETH to cover for the query fee");
+        } else {
+            newOraclizeQuery("Oraclize query was sent, standing by for the answer..");
+            oraclize_query("URL", oraclizeURL);
+        }
     }
 }
