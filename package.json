@@ -1,0 +1,25 @@
+{
+  "name": "escrow",
+  "version": "1.0.0",
+  "description": "This contract facilitates an escrow contract between two counterparties.",
+  "main": "truffle-config.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/shanefontaine/escrow.git"
+  },
+  "author": "Shane Fontaine <shane6fontaine@gmail.com>",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/shanefontaine/escrow/issues"
+  },
+  "homepage": "https://github.com/shanefontaine/escrow#readme",
+  "dependencies": {
+    "zeppelin-solidity": "^1.4.0"
+  }
+}
