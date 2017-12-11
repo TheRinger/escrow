@@ -8,10 +8,15 @@ the result.
 - People can participate in multiple at once
 - Customizable contracts (amount contributed, time range, etc.)
 - Ability to end the contract at any point
+- One-way bet (set `multipler` to 0)
 
 ## Assumptions
 - The resolution of the bet is of type `uint256` and can be called via a simple URL
+- One addresses cannot be in multiple escrows of the same name at one time
+- The entire balance for each counterparty must be included in one transaction from each party
+- The multiplier must be >0.1
 
 ### Future Features
 - ERC20 compatibility
 - Multiple type oracle returns
+- Terms Of Use
