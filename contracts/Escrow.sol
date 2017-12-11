@@ -9,7 +9,8 @@ import "zeppelin-solidity/contracts/math/SafeMath.sol";
 contract Escrow {
     using SafeMath for uint;
 
-    uint256 bet;  // Value of the bet
+    uint256 public bet;     // Value of the bet
+    address public winner;  // Winner of the bet
 
     // Party address, the escrow name, and status of escrow
     mapping(address => mapping(bytes32 => bool))    public escrowInitializing;
@@ -84,7 +85,7 @@ contract Escrow {
         escrowOngoing[counterparty][escrowName] = true;     // Begin the bet
     }
 
-    /// @dev End the escrow and retrieve funds. Must be called by both parties
+    /// @dev End the escrow and retrieve funds. Can be called by either.
     /// @param escrowName Name of the escrow
     /// @param counterparty The address of the person who is partaking in the escrow
     /// @param oracleURL URL to get the oracle result from
@@ -97,10 +98,37 @@ contract Escrow {
         require(escrowOver[counterparty][escrowName] == true);          // Escrow must have been ongoing
         require(escrowOver[counterparty][escrowName] == true);          // Escrow must have been ongoing
 
+        // Calculate the winner and loser
         uint256 oracleResult = getOracleResults();
-        bool resultCondition = predi
+        bool resultCondition = predictedResultCondition[msg.sender][escrowName];
+        if (resultCondition == true) {
+            if (predictedResult > oracleResult) {
+                winner = msg.sender;
+            } else {
+                winner = counterparty;
+            }
+        } else {
+            if (predictedResult > oracleResult) {
+                winner = counterparty;
+            } else {
+                winner = msg.sender;
+            }
+        }
+        uint256 winnings = betVal[msg.sender][escrowName].add(betVal[counterparty][escrowName]);
+        desiredCancelAfter[msg.sender][escrowName] == false;     // Return desiredCancelAfter to uninitialized state
+        desiredCancelAfter[counterparty][escrowName] == false;   // Return desiredCancelAfter to uninitialized state
+        escrowInitializing[msg.sender][escrowName] = false;      // Return escrowInitializing to uninitialized state
+        escrowInitializing[counterparty][escrowName] = false;    // Return escrowInitializing to uninitialized state
+        escrowOver[msg.sender][escrowName] = false;              // Return escrowOver to uninitialized state
+        escrowOver[counterparty][escrowName] = false;            // Return escrowOver to uninitialized state
+        endTime[msg.sender][escrowName] = 0;                     // Return endTimestamp to uninitialized state
+        endTime[counterparty][escrowName] = 0;                   // Return endTimestamp to uninitialized state
+        predictedResult[msg.sender][escrowName] = 0;             // Return predictedResult to uninitialized state
+        predictedResult[counterparty][escrowName] = 0;           // Return predictedResult to uninitialized state
+        predictedResultCondition[msg.sender][escrowName] = 0;    // Return predictedResultCondition to uninitialized state
+        predictedResultCondition[counterparty][escrowName] = 0;  // Return predictedResultCondition to uninitialized state
 
-
+        winner.transfer(winnings);
     }
 
     /// @dev Cancel the escrow before it has begun. Requires just one party. Returns funds.
@@ -195,6 +223,8 @@ contract Escrow {
             counterparty.transfer(ethToReturnCounterparty);  // Return ETH to the respective counterparty
         }
     }
+
+    // TODO: Add uninitialize function with state parameter
     /// @dev Retrieves the oracle result for the specified escrow
     /// @param oracleURL URL to get the oracle result from
     function getOracleResult(string oracleURL) internal returns(uint256) {
