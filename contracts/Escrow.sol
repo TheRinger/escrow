@@ -30,7 +30,7 @@ contract Escrow {
     event StartEscrow(address party, address counterparty, bytes32 escrowName, uint256 endTimestamp, uint256 multiplier, uint256 amountBet, uint256 predictedResult, bool predictedResultCondition);  // Log the start of an escrow
     event CancelEscrow(address party, address counterparty, bytes32 escrowName, uint256 endTimestamp, string state);  // Log cancel
     event LogWinner(address winner, uint256 value, bytes32 escrowName, uint256 predictedResult, bool predictedResultCondition, uint256 result);  // Log winner
-    event LogLoser(address winner, bytes32 escrowName, uint256 predictedResult, bool predictedResultCondition, uint256 result));  // Log winner
+    event LogLoser(address winner, bytes32 escrowName, uint256 predictedResult, bool predictedResultCondition, uint256 result);  // Log winner
 
     /// @dev Start an escrow. The creator must define the counterparty
     /// @param escrowName Name of the escrow
@@ -112,7 +112,7 @@ contract Escrow {
                 loser = counterparty;
             } else {
                 winner = counterparty;
-                loser = msg.sender
+                loser = msg.sender;
             }
         } else {
             if (predictedResult[msg.sender][escrowName] > oracleResult) {
@@ -124,7 +124,7 @@ contract Escrow {
             }
         }
         uint256 winnings = betVal[msg.sender][escrowName].add(betVal[counterparty][escrowName]);
-        uninitialize(escrowName, counterparty, 'over');  // Uninitialize variables
+        uninitialize(escrowName, counterparty, "over");  // Uninitialize variables
 
         winner.transfer(winnings);
         LogWinner(winner, winnings, escrowName, predictedResult[winner][escrowName], predictedResultCondition[winner][escrowName], oracleResult);
@@ -141,11 +141,11 @@ contract Escrow {
         require(escrowOver[msg.sender][escrowName] == false);         // Escrow of this name with this party has to not be over
 
         uint256 ethToReturn = betVal[msg.sender][escrowName];         // Calculate value to return
-        uninitialize(escrowName, counterparty, 'before');             // Uninitialize variables
+        uninitialize(escrowName, counterparty, "before");             // Uninitialize variables
 
 
         msg.sender.transfer(ethToReturn);  // Return ETH to the appropriate party
-        CancelEscrow(msg.sender, counterparty, escrowName, endTime[msg.sender][escrowName], 'before');
+        CancelEscrow(msg.sender, counterparty, escrowName, endTime[msg.sender][escrowName], "before");
     }
 
     /// @dev Cancel the escrow while it is ongoing. Requires both parties. Returns funds.
@@ -163,11 +163,11 @@ contract Escrow {
         if (desiredCancelDuring[msg.sender][escrowName] == true && desiredCancelDuring[counterparty][escrowName] == true) {
             uint256 ethToReturnParty = betVal[msg.sender][escrowName];
             uint256 ethToReturnCounterparty = betVal[counterparty][escrowName];
-            uninitialize(escrowName, counterparty, 'during');  // Uninitialize variables
+            uninitialize(escrowName, counterparty, "during");  // Uninitialize variables
 
             msg.sender.transfer(ethToReturnParty);             // Return ETH to the respective counterparty
             counterparty.transfer(ethToReturnCounterparty);    // Return ETH to the respective counterparty
-            CancelEscrow(msg.sender, counterparty, escrowName, endTime[msg.sender][escrowName], 'during');
+            CancelEscrow(msg.sender, counterparty, escrowName, endTime[msg.sender][escrowName], "during");
         }
     }
 
@@ -188,11 +188,11 @@ contract Escrow {
         if (desiredCancelAfter[msg.sender][escrowName] == true && desiredCancelAfter[counterparty][escrowName] == true) {
             uint256 ethToReturnParty = betVal[msg.sender][escrowName];
             uint256 ethToReturnCounterparty = betVal[counterparty][escrowName];
-            uninitialize(escrowName, counterparty, 'over');  // Uninitialize variables
+            uninitialize(escrowName, counterparty, "over");  // Uninitialize variables
 
             msg.sender.transfer(ethToReturnParty);           // Return ETH to the respective counterparty
             counterparty.transfer(ethToReturnCounterparty);  // Return ETH to the respective counterparty
-            CancelEscrow(msg.sender, counterparty, escrowName, endTime[msg.sender][escrowName], 'after');
+            CancelEscrow(msg.sender, counterparty, escrowName, endTime[msg.sender][escrowName], "after");
         }
     }
 
@@ -206,15 +206,15 @@ contract Escrow {
         predictedResult[counterparty][escrowName] = 0;               // Return predictedResult to uninitialized state
         predictedResultCondition[msg.sender][escrowName] = false;    // Return predictedResultCondition to uninitialized state
         predictedResultCondition[counterparty][escrowName] = false;  // Return predictedResultCondition to uninitialized state
-
-        if (state == 'during') {
+        // TODO: Use stringutils lib
+        if (keccak256(state) == keccak256("during")) {
             escrowInitializing[counterparty][escrowName] = false;    // Return escrowInitializing to uninitialized state
             escrowOngoing[msg.sender][escrowName] = false;           // Return escrowInitializing to uninitialized state
             escrowOngoing[counterparty][escrowName] = false;         // Return escrowInitializing to uninitialized state
             desiredCancelDuring[msg.sender][escrowName] == false;    // Return desiredCancelDuring to uninitialized state
             desiredCancelDuring[counterparty][escrowName] == false;  // Return desiredCancelDuring to uninitialized state
         }
-        if (state = 'over') {
+        if (keccak256(state) == keccak256("over")) {
             escrowInitializing[counterparty][escrowName] = false;    // Return escrowInitializing to uninitialized state
             escrowOngoing[msg.sender][escrowName] = false;           // Return escrowInitializing to uninitialized state
             escrowOngoing[counterparty][escrowName] = false;         // Return escrowInitializing to uninitialized state
