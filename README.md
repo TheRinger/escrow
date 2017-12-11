@@ -15,8 +15,9 @@ the result.
 - One addresses cannot be in multiple escrows of the same name at one time
 - The entire balance for each counterparty must be included in one transaction from each party
 - The multiplier must be >0.1
+- If you want to change the parameters of an escrow contract, cancel the existing one first, then recreate another one
 
 ### Future Features
 - ERC20 compatibility
-- Multiple type oracle returns
+- Multiple type oracle returns and bets
 - Terms Of Use
