@@ -4,7 +4,7 @@ import "zeppelin-solidity/contracts/math/SafeMath.sol";
 
 
 // TODO:
-// What happens if endTime occurs prior to the coutnerparty finalizing the escrow? It should simply cancel.
+// What happens if endTime occurs prior to the counterparty finalizing the escrow? It should simply cancel.
 contract Escrow {
     using SafeMath for uint;
 
@@ -16,9 +16,8 @@ contract Escrow {
     mapping(address => mapping(bytes32 => bool)) public escrowOver;
     mapping(address => mapping(bytes32 => bool)) public desiredCancelDuring;  // Signal a parties desire to cancel the escrow while it is ongoing
     mapping(address => mapping(bytes32 => bool)) public desiredCancelAfter;   // Signal a parties desire to cancel the escrow after it is over
-    // Counterparty address, the escrow name, and the value of the bet/return
+    // Counterparty address, the escrow name, and the value of the bet
     mapping(address => mapping(bytes32 => uint256)) public betVal;
-    mapping(address => mapping(bytes32 => uint256)) public returnVal;
 
     /// @dev Start an escrow. The creator must define the counterparty
     /// @param escrowName Name of the escrow
@@ -29,7 +28,7 @@ contract Escrow {
         bytes32 escrowName,
         address counterparty,
         uint256 endTime,
-        uint256 multiplier,
+        uint256 multiplier
     )
         public
         payable
@@ -107,9 +106,9 @@ contract Escrow {
             betVal[msg.sender][escrowName] = 0;    // Return betVal to uninitialized state
             betVal[counterparty][escrowName] = 0;  // Return betVal to uninitialized state
             desiredCancelDuring[msg.sender][escrowName] == false;    // Return desiredCancelDuring to uninitialized state
-            desiredCancelDuring[counterparty][escrowName] == false;  // Return desiredCancelDruing to unititialized state
-            escrowInitializing[msg.sender][escrowName] = false       // Return escrowInitializing to uninitialized state
-            escrowInitializing[counterParty][escrowName] = false     // Return escrowIntitalizing to uninitialized state
+            desiredCancelDuring[counterparty][escrowName] == false;  // Return desiredCancelDuring to uninitialized state
+            escrowInitializing[msg.sender][escrowName] = false;      // Return escrowInitializing to uninitialized state
+            escrowInitializing[counterParty][escrowName] = false;    // Return escrowInitializing to uninitialized state
 
 
             msg.sender.transfer(ethToReturnParty);           // Return ETH to the respective counterparty
@@ -137,11 +136,11 @@ contract Escrow {
             betVal[msg.sender][escrowName] = 0;    // Return betVal to uninitialized state
             betVal[counterparty][escrowName] = 0;  // Return betVal to uninitialized state
             desiredCancelAfter[msg.sender][escrowName] == false;    // Return desiredCancelAfter to uninitialized state
-            desiredCancelAfter[counterparty][escrowName] == false;  // Return desiredCancelAfter to unititialized state
-            escrowInitializing[msg.sender][escrowName] = false       // Return escrowInitializing to uninitialized state
-            escrowInitializing[counterParty][escrowName] = false     // Return escrowIntitalizing to uninitialized state
-            escrowOver[msg.sender][escrowName] = false               // Return escrowOver to uninitialized state
-            escrowOver[counterParty][escrowName] = false             // Return escrowOver to uninitialized state
+            desiredCancelAfter[counterparty][escrowName] == false;  // Return desiredCancelAfter to uninitialized state
+            escrowInitializing[msg.sender][escrowName] = false;     // Return escrowInitializing to uninitialized state
+            escrowInitializing[counterParty][escrowName] = false;   // Return escrowInitializing to uninitialized state
+            escrowOver[msg.sender][escrowName] = false;             // Return escrowOver to uninitialized state
+            escrowOver[counterParty][escrowName] = false;           // Return escrowOver to uninitialized state
 
             msg.sender.transfer(ethToReturnParty);           // Return ETH to the respective counterparty
             counterparty.transfer(ethToReturnCounterparty);  // Return ETH to the respective counterparty
