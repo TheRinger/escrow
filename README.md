@@ -19,5 +19,5 @@ the result.
 
 ### Future Features
 - ERC20 compatibility
-- Multiple type oracle returns and bets
+- Multiple type oracle returns and bets (string, addresses, etc.)
 - Terms Of Use
