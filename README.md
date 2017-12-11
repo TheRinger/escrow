@@ -20,4 +20,8 @@ the result.
 ### Future Features
 - ERC20 compatibility
 - Multiple type oracle returns and bets (string, addresses, etc.)
+- Multiple parties per bet
+
+### TODO
+- Add tests
 - Terms Of Use
