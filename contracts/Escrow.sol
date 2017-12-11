@@ -53,7 +53,7 @@ contract Escrow {
     /// @param counterparty The address of the person who is partaking in the escrow
     function finalizeEscrow(string escrowName, address counterparty) public payable {
         require(escrowInitializing[msg.sender][escrowName] != true);        // Escrow must have been initiated
-        require(escrowInitializing[msg.counterparty][escrowName] != true);  // Escrow must have been initiated
+        require(escrowInitializing[counterparty][escrowName] == true);      // Escrow must have been initiated
         require(escrowOngoing[msg.sender][escrowName] != true);             // Counterparty must not already be in an escrow of the same name
         require(escrowOngoing[counterparty][escrowName] != true);           // Counterparty must not already be in an escrow of the same name
         require(msg.value == betVal[msg.sender][escrowName]);               // The sender must send the correct amount of ETH
@@ -73,8 +73,16 @@ contract Escrow {
 
     /// @dev Cancel the escrow before it has begun. Requires just one party. Returns funds.
     /// @param escrowName Name of the escrow
-    function cancelPreEscrow() public {
+    function cancelPreEscrow(bytes32 escrowName) public {
+        require(betVal[msg.sender][escrowName] != 0);                 // Party must have funds in the contract for thisbet
+        require(escrowInitializing[msg.sender][escrowName] == true);  // Escrow of this name with this party has to be in the initializing state
+        require(escrowOngoing[msg.sender][escrowName] != true);       // Escrow of this name with this party has to not be ongoing
 
+        uint256 ethToReturn = betVal[msg.sender][escrowName];  // Calculate value to return
+        betVal[msg.sender][escrowName] = 0;                    // Reset escrow
+        escrowInitializing[msg.sender][escrowName] = false;    // Reset escrow
+
+        msg.value.transfer(ethToReturn);  // Return ETH to the appropriate party
     }
 
     /// @dev Cancel the escrow while it is ongoing. Requires both parties. Returns funds.
