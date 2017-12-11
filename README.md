@@ -21,6 +21,7 @@ the result.
 - ERC20 compatibility
 - Multiple type oracle returns and bets (string, addresses, etc.)
 - Multiple parties per bet
+- getURL return function (to test URL entry)
 
 ### TODO
 - Add tests
