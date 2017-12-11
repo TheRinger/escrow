@@ -8,13 +8,15 @@ import "zeppelin-solidity/contracts/math/SafeMath.sol";
 contract Escrow {
     using SafeMath for uint;
 
-    uint256 bet;
+    uint256 bet;  // Value of the bet
 
     // Counterparty address, the escrow name, and status of escrow
     mapping(address => mapping(bytes32 => bool)) public escrowInitializing;
     mapping(address => mapping(bytes32 => bool)) public escrowOngoing;
-    // Counterparty address, the escrow name, and the value of the bet
+    mapping(address => mapping(bytes32 => bool)) public desiredCancel;
+    // Counterparty address, the escrow name, and the value of the bet/return
     mapping(address => mapping(bytes32 => uint256)) public betVal;
+    mapping(address => mapping(bytes32 => uint256)) public returnVal;
 
     /// @dev Start an escrow. The creator must define the counterparty
     /// @param escrowName Name of the escrow
@@ -22,7 +24,7 @@ contract Escrow {
     /// @param endTime Unix timestamp of the desired end of the contract
     /// @param multiplier Multiplier for the bet. Can be positive or negative
     function startEscrow(
-        string escrowName,
+        bytes32 escrowName,
         address counterparty,
         uint256 endTime,
         uint256 multiplier,
@@ -44,7 +46,7 @@ contract Escrow {
             bet = msg.value.mul(multiplier.div(10**17));  // TODO: Make sure this works as planned. PEMDAS.
         }
         escrowInitializing[msg.sender][escrowName] = true;  // Set the beginning of the escrow for the initiator
-        betVal[msg.sender][escrowName] = bet;               // Set the value of the bet (done for each party)
+        betVal[msg.sender][escrowName] = msg.value;         // Set the value of the bet (done for each party)
         betVal[counterparty][escrowName] = bet;             // Set the value of the bet (done for each party)
     }
 
@@ -82,20 +84,31 @@ contract Escrow {
         betVal[msg.sender][escrowName] = 0;                    // Reset escrow
         escrowInitializing[msg.sender][escrowName] = false;    // Reset escrow
 
-        msg.value.transfer(ethToReturn);  // Return ETH to the appropriate party
+        msg.sender.transfer(ethToReturn);  // Return ETH to the appropriate party
     }
 
     /// @dev Cancel the escrow while it is ongoing. Requires both parties. Returns funds.
     /// @param escrowName Name of the escrow
-    function cancelMidEscrow() public {
+    /// @param counterparty The address of the person who is partaking in the escrow
+    function cancelPostStartEscrow(bytes32 escrowName, address counterparty) public {
+        require(escrowInitializing[msg.sender][escrowName] = true);     // Escrow must have been initiated
+        require(escrowInitializing[counterparty][escrowName] == true);  // Escrow must have been initiated
+        require(escrowOngoing[msg.sender][escrowName] == true);          // Escrow must be ongoing
+        require(escrowOngoing[counterparty][escrowName] == true);        // Escrow must be ongoing
 
-    }
+        desiredCancel[msg.sender][escrowName] == true;  // Signal the cancellation
 
-    /// @dev Cancel the escrow after it has concluded. This is to be used in the event of a bad oracle or off-chain
-    /// @dev cancellation agreement. Requires both parties. Returns funds.
-    /// @param escrowName Name of the escrow
-    function cancelPostEscrow() public {
+        if (desiredCancel[msg.sender][escrowName] == true && desiredCancel[counterparty][escrowName] == true) {
+            uint256 ethToReturnParty = betVal[msg.sender][escrowName];
+            uint256 ethToReturnCounterparty = betVal[counterparty][escrowName];
+            betVal[msg.sender][escrowName] = 0;    // Return betVal to uninitialized state
+            betVal[counterparty][escrowName] = 0;  // Return betVal to uninitialized state
+            desiredCancel[msg.sender][escrowName] == false;    // Return desiredCancel to uninitialized state
+            desiredCancel[counterparty][escrowName] == false;  // Return desiredCancel to unititialized state
 
+            msg.sender.transfer(ethToReturnParty);           // Return ETH to the respective counterparty
+            counterparty.transfer(ethToReturnCounterparty);  // Return ETH to the respective counterparty
+        }
     }
 
     /// @dev Retrieves the oracle result for the specified escrow
